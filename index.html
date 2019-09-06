@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        button {
+            color: black;
+            /* This is a single-line comment */
+            text-align: center;
+        }
+
+        p {
+            color: blue;
+            /* This is a single-line comment */
+            text-align: center;
+        }
+
+        h1,
+        h2 {
+            color: black;
+            /* This is a single-line comment */
+            font-size: 14px;
+            text-align: center;
+        }
+
+        div {
+            background-color: #0ff;
+            width: 300px;
+            height: 50px;
+            border: 1px dotted whitesmoke;
+            overflow: auto;
+        }
+
+        /* This is
+                    a multi-line
+                    comment */
+    </style>
+    <script src="./libraries/webblue-phaseOne.js"></script>
+    <!-- <script src="./libraries/RGraph.common.core.js"></script>
+        <script src="./libraries/RGraph.line.js"></script> -->
+    <!-- <script src="./libraries/webblue-phaseOne.js"></script>
+        <script src="./libraries/ExtractResult.js"></script>
+        <script src="./libraries/ADPCMManager.js"></script>
+        <script src="./libraries/ADPCMSync.js"></script>
+        <script src="./libraries/BVAudiomanager.js"></script>
+        <script src="./libraries/FeatureAudioADPCM.js"></script>
+    
+        <script>
+            deviceNo_1 = new webblue_phaseOne('1');
+            deviceNo_2 = new webblue_phaseOne('2');
+            deviceNo_3 = new webblue_phaseOne('3');
+            deviceNo_4 = new webblue_phaseOne('4');
+            deviceNo_BV = new BVAudiomanager('BV');
+        </script>
+     -->
+</head>
+
+<body>
+
+    <p>select profile you wanted to connect.</p>
+    <p>Take a look at <a href=deviceNo_1.name target="_blank">device node</a></p>
+
+    <select id="mySelectedProfile" onchange="deviceNo_1 = new webblue_phaseOne(this.value)">
+        <option value="">Choose a profile</option>
+        <option value="BBC_Microbit">Microbit</option>
+        <option value="ST_BLUEST">BLUEST</option>
+    </select>
+
+    <button type="button" onclick="mySelectedProfile()">Display index</button>
+    <button type="button" onclick="deviceNo_1 = undefined">release the object</button>
+
+    <div id="showJson"></div>
+
+    <script>
+
+        function mySelectedProfile() {
+            // var x = document.getElementById("mySelectProfile").selectedIndex;
+            // var y = document.getElementById("mySelectProfile").options[x].value;
+
+            alert("you'v selected profile : " + deviceNo_1.name);
+            document.getElementsByTagName("a")[0].setAttribute("href", "./libraries/" + deviceNo_1.name + ".txt");
+            // var obj = JSON.parse(deviceNo_1.name + ".txt");
+
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var myObj = JSON.parse(this.responseText);
+                    document.getElementById("showJson").innerHTML = myObj.name;
+                }
+            };
+            xmlhttp.open("GET", "./libraries/" + deviceNo_1.name + ".txt", true);
+            xmlhttp.send();
+
+            // document.getElementById("showJson").innerHTML(obj.name);
+        }
+
+    // nodeProfileCreat = function(sel) {
+    // var node = sel;
+    // alert("you'v selected profile : " + node);
+    // }
+
+    </script>
+
+
+
+</body>
+
+</html>

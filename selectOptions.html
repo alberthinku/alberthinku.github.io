@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        button {
+            color: black;
+            /* This is a single-line comment */
+            text-align: center;
+        }
+
+        p {
+            color: blue;
+            /* This is a single-line comment */
+            text-align: center;
+        }
+
+        h1,
+        h2 {
+            color: black;
+            /* This is a single-line comment */
+            font-size: 14px;
+            text-align: center;
+        }
+
+        div {
+            background-color: #0ff;
+            width: flex;
+            height: 40px;
+            border: 1px dotted whitesmoke;
+            overflow: auto;
+        }
+
+        /* This is
+                    a multi-line
+                    comment */
+    </style>
+
+    <style>
+        /* The container */
+        .container {
+            display: block;
+            position: relative;
+            padding-left: 35px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            font-size: 22px;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* Hide the browser's default checkbox */
+        /* .container input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        } */
+
+        /* Create a custom checkbox */
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 25px;
+            width: 25px;
+            /* cursor: pointer; */
+            background-color: #eee;
+        }
+
+        /* On mouse-over, add a grey background color */
+        .container:hover input~.checkmark {
+            background-color: #ccc;
+        }
+
+        /* When the checkbox is checked, add a blue background */
+        .container input:checked~.checkmark {
+            background-color: #2196F3;
+        }
+
+        /* Create the checkmark/indicator (hidden when not checked) */
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        /* Show the checkmark when checked */
+        .container input:checked~.checkmark:after {
+            display: block;
+        }
+
+        /* Style the checkmark/indicator */
+        .container .checkmark:after {
+            left: 9px;
+            top: 5px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            /* border: solid black; */
+            border-width: 0 3px 3px 0;
+            -webkit-transform: rotate(45deg);
+            -ms-transform: rotate(45deg);
+            transform: rotate(45deg);
+        }
+    </style>
+    <!--         
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .form-inline {
+            display: flex;
+            /* flex-flow: row wrap; */
+            flex-flow: row wrap;
+            align-items: center;
+        }
+
+        .form-inline label {
+            margin: 5px 10px 5px 0;
+        }
+
+        .form-inline input {
+            vertical-align: middle;
+            margin: 5px 10px 5px 0;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
+
+        .form-inline button {
+            padding: 10px 20px;
+            background-color: dodgerblue;
+            border: 1px solid #ddd;
+            color: white;
+            cursor: pointer;
+        }
+
+        .form-inline button:hover {
+            background-color: royalblue;
+        }
+
+        @media (max-width: 800px) {
+            .form-inline input {
+                margin: 10px 0;
+            }
+
+            .form-inline {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style> -->
+
+    <script src="./libraries/webblue-phaseOne.js"></script>
+    <script src="./libraries/parseJson.js"></script>
+    <script src="./libraries/refreshLayer.js"></script>
+    <script>myWindow = null;</script>
+
+
+    <!-- <script src="./libraries/RGraph.common.core.js"></script>
+        <script src="./libraries/RGraph.line.js"></script> -->
+    <!-- <script src="./libraries/webblue-phaseOne.js"></script>
+        <script src="./libraries/ExtractResult.js"></script>
+        <script src="./libraries/ADPCMManager.js"></script>
+        <script src="./libraries/ADPCMSync.js"></script>
+        <script src="./libraries/BVAudiomanager.js"></script>
+        <script src="./libraries/FeatureAudioADPCM.js"></script>
+    
+        <script>
+            deviceNo_1 = new webblue_phaseOne('1');
+            deviceNo_2 = new webblue_phaseOne('2');
+            deviceNo_3 = new webblue_phaseOne('3');
+            deviceNo_4 = new webblue_phaseOne('4');
+            deviceNo_BV = new BVAudiomanager('BV');
+        </script>
+     -->
+</head>
+
+<body>
+    <h1>Web Bluetooth try</h1>
+    <h2>Status</h2>
+    <table border="1">
+        <tr>
+            <td>
+                <b>Device No.</b>
+            </td>
+            <td>
+                <b>Connected</b>
+            </td>
+            <td>
+                <b>Device Name.</b>
+            </td>
+
+            <td>
+                <b>Services Discovery Completed</b>
+            </td>
+            <td>
+                <b>Notifications</b>
+            </td>
+            <!-- <td>
+                    <b>Punchmeter Reading</b>
+                </td> -->
+        </tr>
+        <tr>
+            <td>1</td>
+            <td id="status_connected1">false</td>
+            <td id="device_name1">NA</td>
+            <td id="status_discovered1">false</td>
+            <td id="status_notifications1">false</td>
+            <!-- <td id="status_Punchmeter1">false</td> -->
+
+        </tr>
+    </table>
+
+    <p>select profile you wanted to connect.</p>
+    <p>Take a look at <a href=deviceNo_1.realname target="_blank">device node</a></p>
+
+    <!-- <select id="mySelectedProfile" onchange="if (!(this.value==null)) deviceNo_1 = new webblue_phaseOne(1, this.value)"> -->
+    <form>
+        <select id="mySelectedProfile" onchange="deviceNo_1 = new webblue_phaseOne(1, this.value)">
+            <option value="" selected="selected">Choose a profile</option>
+            <option value="BBC_Microbit">Microbit</option>
+            <option value="ST_BLUEST">BLUEST</option>
+        </select>
+        <input type="reset" value="reset" onclick="reinit()" />
+    </form>
+
+    <button type="button" onclick="mySelectedProfile()">Display index</button>
+    <!-- <button type="button" onclick="deviceNo_1 = undefined">release the object</button> -->
+
+    <div id="showJson"></div>
+
+    <h2>Device Discovery and Connection</h2>
+    <button id="btn_scan1" onclick="deviceNo_1.discoverDevicesOrDisconnect()">discoverDevices</button>
+    <hr>
+    <div id="chardatanotification1"></div>
+    <button id="btn_notify1" onclick="deviceNo_1.toggleCharacteristicNotifications()">toggle
+        toggleCharNotify.1</button><br />
+    <hr>
+    <h2>option choice</h2>
+
+
+    <span id="GATTShow">let's start </span>
+    <button id="btn_refresh" onclick="myWindow.refreshSelf(deviceNo_1)">Confirm!</button>
+
+    <script>
+
+        function reinit() {
+            var options = document.querySelectorAll('#mySelectedProfile option');
+            for (var i = 0, l = options.length; i < l; i++) {
+                options[i].selected = options[i].defaultSelected;
+            }
+            // $('#mySelectedProfile').get(0).selectedIndex = 1;
+            //not safe and cleared enough if under connection .... TODO ....
+            deviceNo_1 = undefined;
+            myWindow = null;
+            showJson.innerHTML = "";
+            GATTShow.innerHTML = "";
+            chardatanotification1.innerHTML = "";
+        }
+
+        function mySelectedProfile() {
+            // var x = document.getElementById("mySelectProfile").selectedIndex;
+            // var y = document.getElementById("mySelectProfile").options[x].value;
+            // try {(deviceNo_1 == undefined)} { reinit(); return -1; }
+            // if (deviceNo_1.realname == "") { reinit(); return -1; }
+            try {
+                // alert("you'v selected profile : " + deviceNo_1.realname);
+
+                document.getElementsByTagName("a")[0].setAttribute("href", "./libraries/" + deviceNo_1.realname + ".txt");
+
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        var myObj = JSON.parse(this.responseText);
+                        document.getElementById("showJson").innerHTML = JSON.stringify(myObj);
+                        myWindow = new refreshLayer(deviceNo_1.makeObjJson(myObj));
+                    }
+                };
+
+                // try { xmlhttp.open("GET", "./libraries/" + deviceNo_1.realname + ".txt", true); }
+                // catch (error) {
+                //     alert('ERROR: ' + error);
+                //     console.log('ERROR: ' + error);
+                //     reinit();
+                //     return -1;
+                // }
+                xmlhttp.open("GET", "./libraries/" + deviceNo_1.realname + ".txt", true);
+                xmlhttp.send();
+                //                     .then(o => { return 1; })
+                //                     .catch(error => {
+                //                         alert('ERROR: ' + error);
+                //                         console.log('ERROR: ' + error);
+                //                         reinit();
+                //                         return -1;
+                //                     });
+            }
+            catch (error) {
+                alert('ERROR: ' + error);
+                console.log('ERROR: ' + error);
+                reinit();
+                return -1;
+            }
+            // document.getElementById("showJson").innerHTML(obj.name);
+            //                 refreshLayers(deviceNo_1.paresedJsonObj);
+        }
+
+
+    </script>
+    <script src="./libraries/saveit.js"></script>
+</body>
+
+</html>
