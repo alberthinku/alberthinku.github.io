@@ -2,6 +2,11 @@
 <html>
 
 <head>
+    <title>Web Bluetooth tool</title>
+    <link rel="stylesheet" type="text/css" href="./libraries/css/tableCss.css">
+    <!-- <link rel="stylesheet" type="text/css" href="./libraries/css/RadiobuttonCss.css">
+    <link rel="stylesheet" type="text/css" href="./libraries/css/CheckboxCss.css"> -->
+
     <style>
         button {
             color: black;
@@ -25,141 +30,64 @@
 
         div {
             background-color: #0ff;
+            /* background-color: black; */
+            color: #e7e7e7;
+            font: lighter;
             width: flex;
             height: 40px;
             border: 1px dotted whitesmoke;
             overflow: auto;
         }
 
+        .notification {
+            background-color: rgba(5, 41, 48, 0.507);
+            height: 20px;
+        }
+
+        .xJSON {
+            background-color: rgba(57, 104, 13, 0.507);
+            height: 50px;
+        }
+
+        .label {
+            color: white;
+            padding: 8px;
+            font-family: Arial;
+        }
+
+        .success {
+            background-color: #4CAF50;
+        }
+
+        /* Green */
+        .info {
+            background-color: #2196F3;
+
+        }
+
+        /* Blue */
+        .warning {
+            background-color: #ff9800;
+        }
+
+        /* Orange */
+        .danger {
+            background-color: #f44336;
+        }
+
+        /* Red */
+        .other {
+            background-color: #e7e7e7;
+            color: black;
+        }
+
+        /* Gray */
+
         /* This is
                     a multi-line
                     comment */
     </style>
 
-    <style>
-        /* The container */
-        .container {
-            display: block;
-            position: relative;
-            padding-left: 35px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            font-size: 22px;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-
-        /* Hide the browser's default checkbox */
-        /* .container input {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            height: 0;
-            width: 0;
-        } */
-
-        /* Create a custom checkbox */
-        .checkmark {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 25px;
-            width: 25px;
-            /* cursor: pointer; */
-            background-color: #eee;
-        }
-
-        /* On mouse-over, add a grey background color */
-        .container:hover input~.checkmark {
-            background-color: #ccc;
-        }
-
-        /* When the checkbox is checked, add a blue background */
-        .container input:checked~.checkmark {
-            background-color: #2196F3;
-        }
-
-        /* Create the checkmark/indicator (hidden when not checked) */
-        .checkmark:after {
-            content: "";
-            position: absolute;
-            display: none;
-        }
-
-        /* Show the checkmark when checked */
-        .container input:checked~.checkmark:after {
-            display: block;
-        }
-
-        /* Style the checkmark/indicator */
-        .container .checkmark:after {
-            left: 9px;
-            top: 5px;
-            width: 5px;
-            height: 10px;
-            border: solid white;
-            /* border: solid black; */
-            border-width: 0 3px 3px 0;
-            -webkit-transform: rotate(45deg);
-            -ms-transform: rotate(45deg);
-            transform: rotate(45deg);
-        }
-    </style>
-    <!--         
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        .form-inline {
-            display: flex;
-            /* flex-flow: row wrap; */
-            flex-flow: row wrap;
-            align-items: center;
-        }
-
-        .form-inline label {
-            margin: 5px 10px 5px 0;
-        }
-
-        .form-inline input {
-            vertical-align: middle;
-            margin: 5px 10px 5px 0;
-            padding: 10px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-        }
-
-        .form-inline button {
-            padding: 10px 20px;
-            background-color: dodgerblue;
-            border: 1px solid #ddd;
-            color: white;
-            cursor: pointer;
-        }
-
-        .form-inline button:hover {
-            background-color: royalblue;
-        }
-
-        @media (max-width: 800px) {
-            .form-inline input {
-                margin: 10px 0;
-            }
-
-            .form-inline {
-                flex-direction: column;
-                align-items: stretch;
-            }
-        }
-    </style> -->
 
     <script src="./libraries/webblue-phaseOne.js"></script>
     <script src="./libraries/parseJson.js"></script>
@@ -189,6 +117,8 @@
 <body>
     <h1>Web Bluetooth try</h1>
     <h2>Status</h2>
+    <h1>Custom Radio Buttons</h1>
+
     <table border="1">
         <tr>
             <td>
@@ -238,14 +168,14 @@
     <button type="button" onclick="mySelectedProfile()">Display index</button>
     <!-- <button type="button" onclick="deviceNo_1 = undefined">release the object</button> -->
 
-    <div id="showJson"></div>
+    <div class="xJSON" id="showJson"></div>
 
     <h2>Device Discovery and Connection</h2>
     <button id="btn_scan1" onclick="deviceNo_1.discoverDevicesOrDisconnect()">discoverDevices</button>
     <hr>
-    <div id="chardatanotification1"></div>
-    <button id="btn_notify1" onclick="deviceNo_1.toggleCharacteristicNotifications()">toggle
-        toggleCharNotify.1</button><br />
+    <div class="notification" id="chardatanotification1"></div>
+    <button id="btn_notify1" onclick="deviceNo_1.commitCharActions()">toggle
+        Actions Commiting</button><br />
     <hr>
     <h2>option choice</h2>
 
@@ -277,7 +207,7 @@
             try {
                 // alert("you'v selected profile : " + deviceNo_1.realname);
 
-                document.getElementsByTagName("a")[0].setAttribute("href", "./libraries/" + deviceNo_1.realname + ".txt");
+                document.getElementsByTagName("a")[0].setAttribute("href", "./libraries/" + deviceNo_1.realname + ".JSON");
 
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.onreadystatechange = function () {
@@ -295,7 +225,7 @@
                 //     reinit();
                 //     return -1;
                 // }
-                xmlhttp.open("GET", "./libraries/" + deviceNo_1.realname + ".txt", true);
+                xmlhttp.open("GET", "./libraries/" + deviceNo_1.realname + ".JSON", true);
                 xmlhttp.send();
                 //                     .then(o => { return 1; })
                 //                     .catch(error => {
@@ -317,7 +247,28 @@
 
 
     </script>
+
     <script src="./libraries/saveit.js"></script>
+
+    <!-- <script>
+        myWindow.checkInputboxHandler(deviceNo_1);
+    </script> -->
+
+    <!-- <label class="container" name="hah">One
+        <input type="radio" checked="checked" name="radio">
+        <span class="checkmark"></span>
+    </label>
+    <label class="container" name="ww">Two
+        <input type="radio" name="radio">
+        <span class="checkmark"></span>
+    </label>
+    <label class="container">Three<input type="radio" name="radio">
+        <span class="checkmark"></span>
+    </label>
+
+    <label class="container">Four<input type="radio" name="radio">
+        <span class="checkmark"></span>
+    </label> -->
 </body>
 
 </html>

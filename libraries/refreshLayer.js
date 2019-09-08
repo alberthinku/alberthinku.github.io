@@ -1,5 +1,12 @@
+//UI textinput dialog : id = "TTin"+uuid
+//UI label : id = "LB" +uuid
+//UI checkbox : id = "CB" + uuid + "R/W/N"
+
 class refreshLayer {
     constructor(obj) {
+        this.UI_textInputDialogPrefix = "TTin";
+        this.UI_labelPrefix = "LB";
+        this.UI_checkboxPrefix = "CB";//the UI_checkboxEndfix = "R/W/N" depending on the box
         this.textG = document.getElementById("GATTShow");
         this.textG.innerHTML = "";
         // document.getElementById
@@ -10,10 +17,6 @@ class refreshLayer {
             //obj is the parsedJson which contains fully info of the profile!
             this.textGATT = this.textG;
             this.textGATT.appendChild(document.createElement("hr"));
-            // this.textGATT = document.createElement("form");
-            // this.textGATT.setAttribute("class", "form-inline");
-            // this.textG.appendChild(this.textGATT);
-
 
             //L1
             this.L1_Service_Status = [];
@@ -31,50 +34,149 @@ class refreshLayer {
         // if (this.L1_Service_Status[0].checked) console.log("read!");
         // this.textGATT.appendChild(this.L1_Service_Status[0]);
         var status = false;
-        for (var i = 0; i < this.L1_Service_Status.length; i++) {
-            status = document.getElementById(this.L1_tagPre + i + "ckbox_R").checked;
-            if (status) console.log("Service " + obj.L1_Service_name[i] + ">reading");
-            status = document.getElementById(this.L1_tagPre + i + "ckbox_W").checked;
-            if (status) console.log("Service " + obj.L1_Service_name[i] + ">writing");
-            status = document.getElementById(this.L1_tagPre + i + "ckbox_N").checked;
-            if (status) console.log("Service " + obj.L1_Service_name[i] + ">notifying");
+        // for (var i = 0; i < this.L1_Service_Status.length; i++) {
+        //     status = document.getElementById(this.L1_tagPre + i + "ckbox_R").checked;
+        //     if (status) console.log("Service " + obj.L1_Service_name[i] + ">reading");
+        //     status = document.getElementById(this.L1_tagPre + i + "ckbox_W").checked;
+        //     if (status) console.log("Service " + obj.L1_Service_name[i] + ">writing");
+        //     status = document.getElementById(this.L1_tagPre + i + "ckbox_N").checked;
+        //     if (status) console.log("Service " + obj.L1_Service_name[i] + ">notifying");
 
-        }
+        // }
+
+        //TODO service connection status check
     }
 
     L2_Char_refresh(dev, obj) {
         var status;
+        dev.updated_Char_choice_R = [];
+        dev.updated_Char_choice_W = [];
+        dev.updated_Char_choice_N = [];
+        var tmp_selected_Char_uuid = [];
+        dev.selected_Char.forEach(element => {
+            tmp_selected_Char_uuid.push(element.uuid);
+        });
+
         for (var i = 0; i < this.L2_Char_Status.length; i++) {
             // if dev.selected_Char[i].property
-            try {
-                var selected_Char = dev.selected_Char[i].properties;
-                status = document.getElementById(this.L2_tagPre + i + "ckbox_R");
-                if (status.checked && selected_Char.read) { console.log("Char " + obj.L2_Char_name[i] + ">reading"); }
-                else if (status.checked) { alert(obj.L2_Char_name[i] + ":Char is not readable!"); status.checked = false; }
+            if (this.L2_Char_Status[i]) {
+                try {
 
-                status = document.getElementById(this.L2_tagPre + i + "ckbox_W");
-                if (status.checked && selected_Char.write) { console.log("Char " + obj.L2_Char_name[i] + ">writing"); }
-                else if (status.checked) { alert(obj.L2_Char_name[i] + ":Char is not writable!"); status.checked = false; }
+                    var uuid = obj.L2_Char[i];//comparing each L2 char UUID
 
-                status = document.getElementById(this.L2_tagPre + i + "ckbox_N");
-                if (status.checked && selected_Char.notify) { console.log("Char " + obj.L2_Char_name[i] + ">notifying"); }
-                else if (status.checked) { alert(obj.L2_Char_name[i] + ":Char not notifyable!"); status.checked = false; }
-            }
-            catch (error) {
-                console.log(error);
-                alert(error);
-                this.RWN_boxclear(i);
-            }
+                    var index = tmp_selected_Char_uuid.indexOf(uuid);
+
+                    if (!(index < 0)) {
+                        var selected_C = dev.selected_Char[index];
+                        if (!(selected_C == null)) {
+                            //sometime discovery service will put empty char in the array
+
+                            var selected_Char_properties = selected_C.properties;
+                            var tagCB = this.UI_checkboxPrefix + selected_C.uuid;
+
+                            status = document.getElementById(tagCB + "ckbox_R");
+                            if (status.checked && selected_Char_properties.read) {
+                                console.log("Char " + obj.L2_Char_name[i] + ">reading");
+                                dev.updated_Char_choice_R.push(selected_C);
+                            }
+                            else if (status.checked) {
+                                alert(obj.L2_Char_name[i] + ":Char is not readable!");
+                                status.checked = false;
+                                status.disabled = true;
+                            }
+                            // status.disabled = !(selected_Char_properties.read);//disable the checkbox if not in the selected_Char_properties.read
+
+
+                            status = document.getElementById(tagCB + "ckbox_W");
+                            if (status.checked && selected_Char_properties.write) {
+                                console.log("Char " + obj.L2_Char_name[i] + ">writing");
+                                var tag_RWN_textinput = this.UI_textInputDialogPrefix + selected_C.uuid;
+                                //this.L2_tagPre + i + "text";
+                                this.RWN_textinputenable(tag_RWN_textinput, status);
+                                dev.updated_Char_choice_W.push(selected_C);
+                            }
+                            else if (status.checked) {
+                                alert(obj.L2_Char_name[i] + ":Char is not writable!");
+                                status.checked = false;
+                                status.disabled = true;
+                            }
+                            else {
+                                document.getElementById(this.UI_textInputDialogPrefix + selected_C.uuid).disabled = true;
+                            }
+                            // status.disabled = !(selected_Char_properties.write);//disable the checkbox if not in the selected_Char_properties.write
+
+                            status = document.getElementById(tagCB + "ckbox_N");
+                            // this.L2_tagPre + i
+                            if (status.checked && selected_Char_properties.notify) {
+                                console.log("Char " + obj.L2_Char_name[i] + ">notifying");
+                                dev.updated_Char_choice_N.push(selected_C);
+                            }
+                            else if (status.checked) {
+                                alert(obj.L2_Char_name[i] + ":Char not notifyable!");
+                                status.checked = false;
+                                status.disabled = true;
+                            }
+                            // status.disabled = !(selected_Char_properties.notify);//disable the checkbox if not in the selected_Char_properties.notify
+
+                        }
+                        else {
+                            this.RWN_boxclear(i, uuid);
+                        }
+                    }//if
+                    else {
+                        this.RWN_boxclear(i, uuid);
+                    }
+                }//try
+                catch (error) {
+                    console.log(error);
+                    alert(error);
+                    // this.RWN_boxclear(i);
+                }//catch
+
+            }//if
         }
     }
-    RWN_boxclear = function (i) {
-        document.getElementById(this.L2_tagPre + i + "ckbox_R").checked = false;
-        document.getElementById(this.L2_tagPre + i + "ckbox_W").checked = false;
-        document.getElementById(this.L2_tagPre + i + "ckbox_N").checked = false;
+    RWN_textinputenable(tagName, element) {
+        var textinputW = document.getElementById(tagName);
+        // textinputW.setAttribute("type", false);
+        textinputW.disabled = false;
+    }
+
+    RWN_textinputplacement(tagName, element, inputDatatype) {
+        var textinputW = document.createElement("input");
+        textinputW.setAttribute("id", tagName);
+        textinputW.setAttribute("type", "text");
+        textinputW.setAttribute("value", inputDatatype);
+        textinputW.disabled = true;
+        element.appendChild(textinputW);
+
+    }
+
+    RWN_boxclear = function (i, uuid) {
+
+        var tagCB = this.UI_checkboxPrefix + uuid;
+
+        this.L2_Char_Status[i] = false;
+
+        document.getElementById(tagCB + "ckbox_R").checked = false;
+        document.getElementById(tagCB + "ckbox_W").checked = false;
+        document.getElementById(tagCB + "ckbox_N").checked = false;
+
+        document.getElementById(tagCB + "ckbox_R").disabled = true;
+        document.getElementById(tagCB + "ckbox_W").disabled = true;
+        document.getElementById(tagCB + "ckbox_N").disabled = true;
+
+        var tag_RWN_textinput = this.UI_textInputDialogPrefix + uuid;//this.L2_tagPre + i.toString() + "text";
+        document.getElementById(tag_RWN_textinput).disabled = true;
     }
     refreshSelf = function (connected_dev) {
-        this.L1_Service_refresh(connected_dev, this.obj);
-        this.L2_Char_refresh(connected_dev, this.obj);
+        if (connected_dev.connected) {
+            this.L1_Service_refresh(connected_dev, this.obj);
+            this.L2_Char_refresh(connected_dev, this.obj);
+        }
+        else {
+            alert("please make device connected before confirm your char choice!")
+        }
     }
 
 
@@ -92,7 +194,7 @@ class refreshLayer {
         newLable.setAttribute("class", "container");
 
         var checkinput = document.createElement("input");
-        // checkinput.setAttribute("name", RWNlable);
+        checkinput.setAttribute("name", RWNlable);
         checkinput.setAttribute("id", tag);
         checkinput.setAttribute("type", "checkbox");
         // checkinput.setAttribute("checked", "checked");
@@ -113,36 +215,31 @@ class refreshLayer {
     }
 
     RWN_checkbox = function (RWN_tag) {
+        this.RWN_placement("N", RWN_tag + "ckbox_N");
         this.RWN_placement("R", RWN_tag + "ckbox_R");
         this.RWN_placement("W", RWN_tag + "ckbox_W");
-        this.RWN_placement("N", RWN_tag + "ckbox_N");
+
     }
 
     L1_Service_Show(subj, subj_name) {
         for (var i in subj) {
             var newLable = document.createElement("lable");
-            // var L1_Service_info = document.createTextNode("text");
+            newLable.setAttribute("id", this.UI_labelPrefix + subj[i]);
+            newLable.setAttribute("name", subj_name[i]);
+            newLable.setAttribute("class", "label warning");
+
             var L1_Service_info = "";
-            // L1_Service_info.nodeName = "L1node" + i;
             L1_Service_info = "Service Name - " + subj_name[i] + " > UUID : " + subj[i];
+
             // L1_Service_info.
             newLable.insertAdjacentText("beforeend", L1_Service_info);
 
-            // this.textGATT.appendChild(L1_Service_info);
-
             this.textGATT.appendChild(newLable);
-            this.RWN_checkbox(this.L1_tagPre + i.toString());
 
             this.L1_Service_Status.push(L1_Service_info);
 
             // var L1_tag = document.createElement("");
             var line = document.createElement("hr");
-            // line.style.width = "20px";
-            // line.style.height = "3px";
-            // line.style.position = "relative";
-            // line.style.top = "6px";
-            // line.style.left = 1 + "px";
-            // line.style.backgroundColor = "red";
             this.textGATT.appendChild(line);//Display the line
         }
     }
@@ -150,18 +247,40 @@ class refreshLayer {
     L2_Char_Show(subj, subj_name) {
         for (var i in subj) {
             var newLable = document.createElement("lable");
+            newLable.setAttribute("id", this.UI_labelPrefix + subj[i]);
+            newLable.setAttribute("name", subj_name[i]);
+            newLable.setAttribute("class", "label info");
             var L2_Char_info = ">>Char name - " + subj_name[i] + " > UUID : " + subj[i];
 
             newLable.insertAdjacentText("beforeend", L2_Char_info);
             this.textGATT.appendChild(newLable);
 
-            this.RWN_checkbox(this.L2_tagPre + i.toString());
+            var tag_RWN_textinput = this.UI_textInputDialogPrefix + subj[i];
+            //this.L2_tagPre + i.toString() + "text";
+            var L2_Char_inputDatatype = this.obj.L2_Char_datatype[subj[i]];
 
-            this.L2_Char_Status.push(L2_Char_info);
+            this.RWN_textinputplacement(tag_RWN_textinput, this.textGATT, L2_Char_inputDatatype);
+
+            this.RWN_checkbox(this.UI_checkboxPrefix + subj[i]);
+            // this.L2_tagPre + i.toString()
+
+            this.L2_Char_Status.push(true);
 
             var line = document.createElement("hr");
             this.textGATT.appendChild(line);
         }
+    }
+
+    checkInputboxHandler = function (dev) {
+        dev.updated_Char_choice_W
+            .forEach(sChar => {
+                document.getElementById(UI_textInputDialogPrefix + sChar).onclick = this.textInputAsstant;
+            });
+    }
+
+    textInputAsstant = function (e) {
+        //TODO remind input should be digital based :INT16, INT8 or String based : utf8
+
     }
 }
 
