@@ -14,6 +14,11 @@ class webblue_phaseOne {
         this.status_device_name = 'device_name' + this.name;
         this.device_name = 'NaN';
         this.btn_scan = 'btn_scan' + this.name;
+        this.discoveredSvcsAndChars = [];
+
+        this.UI_textInputDialogPrefix = "TTin";
+        this.UI_labelPrefix = "LB";
+        this.UI_checkboxPrefix = "CB";//the UI_checkboxEndfix = "R/W/N" depending on the box
 
         this.parsedJsonObj = new parseJson(null);
 
@@ -27,7 +32,7 @@ class webblue_phaseOne {
         this.notification_enabled = [];
         this.detected_services = [];//will collect all the detected services handle
         this.detected_Chars = [];//will collect all the detected characteristics handle
-
+        this.detected_Chars_uuid = [];//will collect all the detected uuid in chars' discovery sequence.
         this.selected_Service_uuid = "";
 
         this.parseObjJson_Char_uuid = [];//should collect all the characteristic uuid, note this uuid list comes from parsedJsonObj file, it not matching to selected_Char after the discovery process!
@@ -67,7 +72,8 @@ class webblue_phaseOne {
         var index = this.scanObj.namePrefix.indexOf(prefix); //if the prefix in the scanObj.namePrefix then obtain all the char
 
         if (index > -1) {
-            this.selected_Service_uuid = this.scanObj.Service[index].UUID;
+            this.selected_Service_uuid = this.scanObj.Service[0].UUID;//note this Service[0] stored the only services array matched by prefix name, as we put name options in same prefix array instead of split
+            //TODO may need to think about a better way to match the prefix and services.//TODO
             for (var sel in this.scanObj.Char) {
                 this.parseObjJson_Char_uuid.push(this.scanObj.Char[sel].UUID);
             }
@@ -84,11 +90,17 @@ class webblue_phaseOne {
         console.log('ended resetUI');
     }//resetUI
 
-    setNotificationStatus(index, status) {
+    setNotificationStatus(uuid, status, updated_Char_choice_N) {
 
-        if (index == -1) { this.notification_enabled = []; }
-        this.notification_enabled[index] = status;
-        document.getElementById(this.status_notifications).innerHTML = status;
+        // if (index == -1) { this.notification_enabled = []; }
+        this.notification_enabled[uuid] = status;
+        document.getElementById(this.UI_checkboxPrefix + uuid + "ckbox_N").disabled = status;//make sure when char is notifying, dont change the notification status before stop it
+        var notification_status_output = "";
+        updated_Char_choice_N.forEach(_ => {
+            var uuidforN = _.uuid;
+            notification_status_output += uuidforN + ":" + this.notification_enabled[uuidforN] + "<br>";
+        });
+        document.getElementById(this.status_notifications).innerHTML = notification_status_output;
     }//setNotificationStatus
 
     setConnectedStatus(status) {
@@ -182,36 +194,40 @@ class webblue_phaseOne {
 
         if (dataType == "Int16") {
             // textencodeKey = "Int16";
-            bufferArray = new Int16Array(dataview.buffer);
+            bufferArray = new Int16Array(dataview.buffer, byteOffset, byteLength / 2);
         }
 
         if (dataType == "Uint8") {
             // textencodeKey = "Uint8";
-            bufferArray = new Uint8Array(dataview.buffer);
+            bufferArray = new Uint8Array(dataview.buffer, byteOffset, byteLength);
+        }
+
+        if (dataType == "Int8") {
+            // textencodeKey = "Int8";
+            bufferArray = new Int8Array(dataview.buffer, byteOffset, byteLength);
         }
 
         if (dataType == "Uint16") {
             // textencodeKey = "Uint16";
-            bufferArray = new Uint16Array(dataview.buffer);
+            bufferArray = new Uint16Array(dataview.buffer, byteOffset, byteLength / 2);
         }
 
         if (dataType == "Utf8") {
             // textencodeKey = "utf-8";
-            bufferArray = new Uint8Array(dataview.buffer);
+            bufferArray = new Uint8Array(dataview.buffer, byteOffset, byteLength);
         }
 
         return bufferArray;
     }//readDataview
 
-    commitCharacteristicRead() {
-        //TODO
+    commitCharacteristicRead(updated_Char_choice_R) {
         console.log("CharacteristicReading");
         if (!(this.connectStatusValidated())) return;
 
 
-        this.updated_Char_choice_R.forEach(sChars => {
+        updated_Char_choice_R.forEach(sChars => {
             if (sChars == null) return;
-            if ((this.updated_Char_choice_R.indexOf(sChars) < 0)) return;
+            if ((updated_Char_choice_R.indexOf(sChars) < 0)) return;
 
             var index = this.selected_Char.indexOf(sChars);
             if ((index < 0)) return;
@@ -220,9 +236,24 @@ class webblue_phaseOne {
                 .then(dataRcv => {
                     console.log("data read successfully" + dataRcv);
 
-                    var dataReadout = this.readDataview(sChars.uuid, dataRcv);
+                    var uuid = sChars.uuid;
+                    var dataReadout = this.readDataview(uuid, dataRcv);
                     console.log(dataReadout);
-                    //TODO
+
+                    var wTS = this.parsedJsonObj.L2_Char_wTS[uuid];
+                    var TS = -1;
+
+                    var handle = document.getElementById(this.UI_labelPrefix + uuid);
+                    handle.className = "danger";
+
+                    if (wTS) {
+                        var TS = dataRcv.getUint16(0, this.parsedJsonObj.L2_Char_littleEndian[uuid]);
+                        handle.innerHTML = "Char Reading>>" + uuid + ":" + wTS + "TS=" + TS + ">" + dataReadout;
+                    } else {
+                        handle.innerHTML = "Char Reading>>" + uuid + "=" + ">" + dataReadout;
+                    }
+
+
                 })
                 .catch(error => {
                     console.log('Error: ' + error);
@@ -238,40 +269,55 @@ class webblue_phaseOne {
         return buffer;
     }
 
-    commitCharacteristicWrite() {
-        //TODO
+    commitCharacteristicWrite(updated_Char_choice_W) {
         console.log("CharacteristicWriting");
         //state validation
         if (!(this.connectStatusValidated())) return;
 
-        this.updated_Char_choice_W.forEach(sChars => {
+        updated_Char_choice_W.forEach(sChars => {
             if (sChars == null) return;
-            if ((this.updated_Char_choice_W.indexOf(sChars) < 0)) return;
+            if ((updated_Char_choice_W.indexOf(sChars) < 0)) return;
 
             var index = this.selected_Char.indexOf(sChars);
             if ((index < 0)) return;
 
             var dataType = this.parsedJsonObj.L2_Char_datatype[sChars.uuid];
+            var dataLength = this.parsedJsonObj.L2_Char_byteLength[sChars.uuid];
             var byteOffset = this.parsedJsonObj.L2_Char_offset[sChars.uuid];
             var littleEndian = this.parsedJsonObj.L2_Char_littleEndian[sChars.uuid];
             var textencodeKey = "";
 
             var strInput = this.getCharTextInput(sChars.uuid);
+            var numberArray = strInput.split(",");
+
+            //TODO: should be the length overflowed, then process safely and completely the write.
+
+            if (strInput.length > dataLength) strInput = strInput.substring(0, dataLength);
             var buffer = new ArrayBuffer(1);
+            if (numberArray.length > dataLength) numberArray = numberArray.slice(0, dataLength);
 
             if (dataType == "Int16") {
                 textencodeKey = "Int16";
-                buffer = new Int16Array([parseInt(strInput)]);
+                // buffer = new Int16Array([parseInt(strInput)]);
+                buffer = new Int16Array(numberArray.map(x => parseInt(x)));
             }
 
             if (dataType == "Uint8") {
                 textencodeKey = "Uint8";
-                buffer = new Uint8Array([parseInt(strInput)]);
+                // buffer = new Uint8Array([parseInt(strInput)]);
+                buffer = new Uint8Array(numberArray.map(x => parseInt(x)));
+            }
+
+            if (dataType == "Int8") {
+                textencodeKey = "Int8";
+                // buffer = new Int8Array([parseInt(strInput)]);
+                buffer = new Int8Array(numberArray.map(x => parseInt(x)));
             }
 
             if (dataType == "Uint16") {
                 textencodeKey = "Uint16";
-                buffer = new Uint16Array([parseInt(strInput)]);
+                // buffer = new Uint16Array([parseInt(strInput)]);
+                buffer = new Uint16Array(numberArray.map(x => parseInt(x)));
             }
 
             if (dataType == "Utf8") {
@@ -279,16 +325,16 @@ class webblue_phaseOne {
                 buffer = new TextEncoder(textencodeKey).encode(strInput);
             }
 
-            // var buffer = new TextEncoder(dataType).encode(this.getCharTextInput(sChars.uuid));
-            // if (textencodeKey == "utf-8") buffer = new TextEncoder(textencodeKey).encode(strInput);
-            // else buffer = new Uint16Array([parseInt(strInput)]);
-
-            console.log("writing: " + buffer);
+            console.log("writing: " + buffer.length + "bytes" + "=" + buffer);
 
             sChars.writeValue(buffer.buffer)
                 .then(_ => {
                     console.log("value writed");
                     //TODO to show accordingly
+                    var uuid = sChars.uuid;
+                    var handle = document.getElementById(this.UI_labelPrefix + uuid);
+                    handle.className = "danger";
+                    handle.innerHTML = "Char writing>>" + uuid + "<=" + buffer;
                 })
                 .catch(error => {
                     console.log('Error: ' + error);
@@ -301,23 +347,25 @@ class webblue_phaseOne {
 
     }
 
-    toggleCharacteristicNotifications() {
+    toggleCharacteristicNotifications(updated_Char_choice_N) {
         console.log("toggleCharacteristicNotifications");
 
         if (!(this.connectStatusValidated())) return;
 
-        this.updated_Char_choice_N.forEach(sChars => {
+        updated_Char_choice_N.forEach(sChars => {
             if (sChars == null) return;
 
             var index = this.selected_Char.indexOf(sChars);
 
             if ((index < 0)) return;
 
-            if (!this.notification_enabled[index]) {
+            var uuid = sChars.uuid;
+
+            if (!this.notification_enabled[uuid]) {
                 sChars.startNotifications()
                     .then(_ => {
                         console.log(sChars + 'notification started');
-                        this.setNotificationStatus(index, true);
+                        this.setNotificationStatus(uuid, true, updated_Char_choice_N);
                         sChars.addEventListener('characteristicvaluechanged', this.onSelectedCharData.bind(this));
                     })
                     .catch(error => {
@@ -330,7 +378,7 @@ class webblue_phaseOne {
                     .then(_ => {
                         console.log(sChars + 'notificaitons stopped');
                         console.log('saving data');
-                        this.setNotificationStatus(index, false);
+                        this.setNotificationStatus(uuid, false, updated_Char_choice_N);
                         //remove this event listener when we unsubscribe
                         sChars.removeEventListener('characteristicvaluechanged', this.onSelectedCharData);
                     })
@@ -355,11 +403,39 @@ class webblue_phaseOne {
         return true;
     }//connectStatusValidated
 
-    commitCharActions = function () {
-        if ((this.updated_Char_choice_N.length > 0)) this.toggleCharacteristicNotifications();
-        if ((this.updated_Char_choice_R.length > 0)) this.commitCharacteristicRead();
-        if ((this.updated_Char_choice_W.length > 0)) this.commitCharacteristicWrite();
+    commitCharActions = function (isCommitAllAction, choice_N, choice_R, choice_W) {
+        //if commitAllAction, then scan all the updated_Char_choice_x, otherwise, scan specific choice_x
+        if (isCommitAllAction) {
+            var updated_Char_choice_N = this.updated_Char_choice_N;
+            var updated_Char_choice_R = this.updated_Char_choice_R;
+            var updated_Char_choice_W = this.updated_Char_choice_W;
+        } else {
+            var updated_Char_choice_N = choice_N;
+            var updated_Char_choice_R = choice_R;
+            var updated_Char_choice_W = choice_W;
+        }
+
+        if ((updated_Char_choice_N.length > 0)) this.toggleCharacteristicNotifications(updated_Char_choice_N);
+        if ((updated_Char_choice_R.length > 0)) this.commitCharacteristicRead(updated_Char_choice_R);
+        if ((updated_Char_choice_W.length > 0)) this.commitCharacteristicWrite(updated_Char_choice_W);
     }//commitCharActions
+
+    commitCharActionsImmy(uuid) {
+        var box_N = document.getElementById(this.UI_checkboxPrefix + uuid + "ckbox_N").checked;
+        var box_W = document.getElementById(this.UI_checkboxPrefix + uuid + "ckbox_W").checked;
+        var box_R = document.getElementById(this.UI_checkboxPrefix + uuid + "ckbox_R").checked;
+        var choice_N = [];
+        var choice_W = [];
+        var choice_R = [];
+
+        var charForPush = this.detected_Chars[this.detected_Chars_uuid.indexOf(uuid)];
+
+        if (box_N) choice_N.push(charForPush);
+        if (box_W) choice_W.push(charForPush);
+        if (box_R) choice_R.push(charForPush);
+
+        this.commitCharActions(false, choice_N, choice_R, choice_W);
+    }
 
     connect() {
         if (this.connected == false) {
@@ -385,7 +461,8 @@ class webblue_phaseOne {
     }//connect
 
 
-    discoverSvcsAndChars() {
+    discoverSvcsAndChars = function () {
+        //         discoveredSvcsAndChars = [];
         console.log("discoverSvcsAndChars server=" + this.connected_server);
         this.connected_server.getPrimaryServices()
             .then(services => {
@@ -397,14 +474,15 @@ class webblue_phaseOne {
                 console.log("Got" + this.service_count + " services");
 
                 services.forEach(service => {
-
-                    if (service.uuid == this.selected_Service_uuid) {
+                    var serviceUUID = service.uuid;
+                    if (serviceUUID == this.selected_Service_uuid) {
                         this.has_selected_service = true;
                     }
 
-                    console.log('getting Characteristics for service' + service.uuid);
+                    console.log('getting Characteristics for service' + serviceUUID);
 
                     this.detected_services.push(service);//collect all the detected service handles
+                    this.discoveredSvcsAndChars.push({ serviceUUID });
 
 
                     service.getCharacteristics().then(characteriscs => {
@@ -415,9 +493,13 @@ class webblue_phaseOne {
 
                         characteriscs.forEach(characterisc => {
                             characteriscs_discovered++;
-                            console.log('>> Characteristic: ' + characterisc.uuid);
+                            var charUUID = characterisc.uuid;
+                            console.log('>> Characteristic: ' + charUUID);
 
                             this.detected_Chars.push(characterisc);//collect all the discovered char handle
+                            this.detected_Chars_uuid.push(charUUID);
+
+                            this.discoveredSvcsAndChars.push({ charUUID });
 
                             var index = this.parseObjJson_Char_uuid.indexOf(characterisc.uuid);//from parsedJson Obj, we shrink the range of selected_Char
 
@@ -439,16 +521,38 @@ class webblue_phaseOne {
                 alert('ERROR: getPrimaryservice -' + error);
                 this.setConnectedStatus(false);
             });
+
     }//discoverSvcsAndChars
 
     onDisconnected = function () {
         var tmp = this;
         console.log("onDisconnected");
-        if (tmp.collectedData.length > 0) {
-            saveData(tmp.collectedData, tmp.name + "my-dn-MotionSensor.json");
-        }
+        var userPreference = "";
+
+        if (confirm("Do you want to save datalogs?") == true) {
+            userPreference = "Data saved successfully!";
+            if (tmp.collectedData.length > 0) {
+                saveData(tmp.collectedData, tmp.realname + "my-dn-MotionSensor.json");
+            } else {
+                alert("no available data!");
+            } //if length
+        } else {
+            userPreference = "Save Canceled!";
+        }// if confirmation
+
+        console.log(userPreference);
+
+
+        // if (tmp.discoveredSvcsAndChars.length > 0)
+        //     saveData(tmp.discoveredSvcsAndChars, tmp.realname + "discoveredSvsAndChars.json");
+
         tmp.resetUI();
     }//onDisconnencted
+
+    buf2hex = function (buffer) { // buffer is an ArrayBuffer
+        return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
+    }
+
 
     onSelectedCharData = function (event) {
         var node = this;
@@ -460,27 +564,20 @@ class webblue_phaseOne {
         var dataview = new DataView(buffer);
         var TS = dataview.getUint16(0, true);
 
-        var temp = '';
-        //TODO, the indexCN method is stupid and waste, should find a better way.!
-        var offset = node.disassembleEventDataOffset(uuid);
-        // var offs = node.scanObj.Char[this.indexCN].offset;
-        var ValidEnd = node.disassembleEventDataValidEnd(uuid);
-
-        for (var i = offset; i < ValidEnd; i++) {
-            temp = temp + ((256 + dataview.getInt8(i)).toString(16).substring(1));
-            //make sure each byte has two digital restored into temp;
-        } //make rawdata showed off
-
-
-        console.log(temp);
-
-
-        // document.getElementById(node.chardatanotification).innerHTML = event.currentTarget.uuid + ":" + temp + "=" + readoutData;
-        // return temp;
-
         var readoutData = this.readDataview(uuid, dataview);
-        document.getElementById(node.chardatanotification).innerHTML = event.currentTarget.uuid + ":" + readoutData;
-        node.collectedData.push({ readoutData });
+        // var rowData = TextDecoderStream()
+        document.getElementById(node.chardatanotification).innerHTML = uuid + ":" + readoutData;
+
+        var wTS = node.parsedJsonObj.L2_Char_wTS[uuid];
+        var bufferIn = new Uint8Array(buffer).buffer;
+        var bufferInhex = this.buf2hex(bufferIn);
+
+        // console.log(bufferInhex); // 
+        var handle = document.getElementById(node.UI_labelPrefix + uuid);
+        handle.className = "danger";
+        handle.innerHTML = "Char Notifying>>" + uuid + ":" + wTS + "TS=" + TS + ">" + readoutData;
+
+        node.collectedData.push({ uuid, bufferInhex, wTS, TS, readoutData });
         // return motionSensorData;
 
     }//onSelectedChar

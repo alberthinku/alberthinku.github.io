@@ -4,8 +4,10 @@
 <head>
     <title>Web Bluetooth tool</title>
     <link rel="stylesheet" type="text/css" href="./libraries/css/tableCss.css">
-    <!-- <link rel="stylesheet" type="text/css" href="./libraries/css/RadiobuttonCss.css">
-    <link rel="stylesheet" type="text/css" href="./libraries/css/CheckboxCss.css"> -->
+    <link rel="stylesheet" type="text/css" href="./libraries/css/smallbuttonsCss.css">
+
+    <!-- <link rel="stylesheet" type="text/css" href="./libraries/css/RadiobuttonCss.css"> -->
+    <!-- <link rel="stylesheet" type="text/css" href="./libraries/css/CheckboxCss.css"> -->
 
     <style>
         button {
@@ -17,7 +19,7 @@
         p {
             color: blue;
             /* This is a single-line comment */
-            text-align: center;
+            text-align: left;
         }
 
         h1,
@@ -25,7 +27,7 @@
             color: black;
             /* This is a single-line comment */
             font-size: 14px;
-            text-align: center;
+            text-align: left;
         }
 
         div {
@@ -34,40 +36,50 @@
             color: #e7e7e7;
             font: lighter;
             width: flex;
-            height: 40px;
-            border: 1px dotted whitesmoke;
+            height: 20px;
+            border: 2px;
             overflow: auto;
         }
 
         .notification {
-            background-color: rgba(5, 41, 48, 0.507);
-            height: 20px;
+            background-color: black;
+            font-size: 13px;
+            width: fit-content;
+            height: 15px;
+            overflow: hidden;
         }
 
         .xJSON {
-            background-color: rgba(57, 104, 13, 0.507);
-            height: 50px;
+            background-color: black;
+            font-size: 16px;
+            height: 40px;
         }
 
         .label {
             color: white;
-            padding: 8px;
+            padding: 2px;
             font-family: Arial;
         }
 
         .success {
             background-color: #4CAF50;
+
         }
 
         /* Green */
         .info {
-            background-color: #2196F3;
+            background-color: black;
+            /* background-color: #2196f3; */
+            font-size: 15px;
+            color: white;
 
         }
 
         /* Blue */
         .warning {
-            background-color: #ff9800;
+            background-color: goldenrod;
+            /* background-color: #ff9800; */
+            font-size: 10px;
         }
 
         /* Orange */
@@ -79,6 +91,7 @@
         .other {
             background-color: #e7e7e7;
             color: black;
+            font-size: 12px;
         }
 
         /* Gray */
@@ -94,30 +107,11 @@
     <script src="./libraries/refreshLayer.js"></script>
     <script>myWindow = null;</script>
 
-
-    <!-- <script src="./libraries/RGraph.common.core.js"></script>
-        <script src="./libraries/RGraph.line.js"></script> -->
-    <!-- <script src="./libraries/webblue-phaseOne.js"></script>
-        <script src="./libraries/ExtractResult.js"></script>
-        <script src="./libraries/ADPCMManager.js"></script>
-        <script src="./libraries/ADPCMSync.js"></script>
-        <script src="./libraries/BVAudiomanager.js"></script>
-        <script src="./libraries/FeatureAudioADPCM.js"></script>
-    
-        <script>
-            deviceNo_1 = new webblue_phaseOne('1');
-            deviceNo_2 = new webblue_phaseOne('2');
-            deviceNo_3 = new webblue_phaseOne('3');
-            deviceNo_4 = new webblue_phaseOne('4');
-            deviceNo_BV = new BVAudiomanager('BV');
-        </script>
-     -->
 </head>
 
 <body>
     <h1>Web Bluetooth try</h1>
     <h2>Status</h2>
-    <h1>Custom Radio Buttons</h1>
 
     <table border="1">
         <tr>
@@ -135,11 +129,8 @@
                 <b>Services Discovery Completed</b>
             </td>
             <td>
-                <b>Notifications</b>
+                <b>Notifications status</b>
             </td>
-            <!-- <td>
-                    <b>Punchmeter Reading</b>
-                </td> -->
         </tr>
         <tr>
             <td>1</td>
@@ -147,52 +138,68 @@
             <td id="device_name1">NA</td>
             <td id="status_discovered1">false</td>
             <td id="status_notifications1">false</td>
-            <!-- <td id="status_Punchmeter1">false</td> -->
 
         </tr>
     </table>
 
-    <p>select profile you wanted to connect.</p>
-    <p>Take a look at <a href=deviceNo_1.realname target="_blank">device node</a></p>
+    <!-- <h2>Step.1 select profile you wanted to connect.</h2> -->
 
     <!-- <select id="mySelectedProfile" onchange="if (!(this.value==null)) deviceNo_1 = new webblue_phaseOne(1, this.value)"> -->
-    <form>
-        <select id="mySelectedProfile" onchange="deviceNo_1 = new webblue_phaseOne(1, this.value)">
-            <option value="" selected="selected">Choose a profile</option>
-            <option value="BBC_Microbit">Microbit</option>
-            <option value="ST_BLUEST">BLUEST</option>
-        </select>
-        <input type="reset" value="reset" onclick="reinit()" />
-    </form>
+    <h2>Step.1 choose a profile
+        <form>
+            <select id="mySelectedProfile" onchange="selectProfile(this.value)">
+                <option value="" selected="selected">Choose a profile</option>
+                <option value="BBC_Microbit">Microbit</option>
+                <option value="ST_BLUEST">BLUEST</option>
+                <option value="ST_BLUEST_full">BLUEST_f</option>
+            </select>
+            <input class="small red button" type="reset" value="reset" onclick="reinit()" />
+        </form>
+        Take a look at <a href=deviceNo_1.realname target="_blank">profile details</a>
 
-    <button type="button" onclick="mySelectedProfile()">Display index</button>
-    <!-- <button type="button" onclick="deviceNo_1 = undefined">release the object</button> -->
+    </h2>
 
-    <div class="xJSON" id="showJson"></div>
+    <div class="xJSON" id="showJson" hidden="true"></div>
 
-    <h2>Device Discovery and Connection</h2>
-    <button id="btn_scan1" onclick="deviceNo_1.discoverDevicesOrDisconnect()">discoverDevices</button>
+    <h2>Step.2 Device Discovery and Connection</h2>
+    <button class="small button" id="btn_scan1"
+        onclick="deviceNo_1.discoverDevicesOrDisconnect()">discoverDevices</button>
     <hr>
-    <div class="notification" id="chardatanotification1"></div>
-    <button id="btn_notify1" onclick="deviceNo_1.commitCharActions()">toggle
-        Actions Commiting</button><br />
-    <hr>
-    <h2>option choice</h2>
+
+    <h2>Step.3 Customize your choices and run!</h2>
+
+    <button class="small button" id="btn_notify1" onclick="processAllCharSelections()">ProcessAllCharSelctions</button>
+
+    <div class="notification" id="chardatanotification1">
+
+    </div>
+    <!-- <hr> -->
 
 
-    <span id="GATTShow">let's start </span>
-    <button id="btn_refresh" onclick="myWindow.refreshSelf(deviceNo_1)">Confirm!</button>
-
+    <span id="GATTShow"></span>
+    <!-- <button class="container" id="btn_refresh" onclick="confirmAct()">Confirm!</button> -->
     <script>
+        function processAllCharSelections() {
+            myWindow.refreshSelf(deviceNo_1);
+            deviceNo_1.commitCharActions(true, [], [], []);
+        }
+        function selectProfile(profilename) {
+            if (!(profilename == "")) { deviceNo_1 = new webblue_phaseOne(1, profilename); };
+            // else reinit();
+            mySelectedProfile();
+        }
+
+        function confirmAct() {
+            myWindow.refreshSelf(deviceNo_1);
+        }
 
         function reinit() {
             var options = document.querySelectorAll('#mySelectedProfile option');
             for (var i = 0, l = options.length; i < l; i++) {
                 options[i].selected = options[i].defaultSelected;
             }
-            // $('#mySelectedProfile').get(0).selectedIndex = 1;
-            //not safe and cleared enough if under connection .... TODO ....
-            deviceNo_1 = undefined;
+
+            // deviceNo_1 = undefined;
             myWindow = null;
             showJson.innerHTML = "";
             GATTShow.innerHTML = "";
@@ -200,40 +207,22 @@
         }
 
         function mySelectedProfile() {
-            // var x = document.getElementById("mySelectProfile").selectedIndex;
-            // var y = document.getElementById("mySelectProfile").options[x].value;
-            // try {(deviceNo_1 == undefined)} { reinit(); return -1; }
-            // if (deviceNo_1.realname == "") { reinit(); return -1; }
             try {
-                // alert("you'v selected profile : " + deviceNo_1.realname);
-
                 document.getElementsByTagName("a")[0].setAttribute("href", "./libraries/" + deviceNo_1.realname + ".JSON");
-
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
                         var myObj = JSON.parse(this.responseText);
                         document.getElementById("showJson").innerHTML = JSON.stringify(myObj);
                         myWindow = new refreshLayer(deviceNo_1.makeObjJson(myObj));
+                        myWindow.refreshSelf(deviceNo_1);
+
                     }
                 };
 
-                // try { xmlhttp.open("GET", "./libraries/" + deviceNo_1.realname + ".txt", true); }
-                // catch (error) {
-                //     alert('ERROR: ' + error);
-                //     console.log('ERROR: ' + error);
-                //     reinit();
-                //     return -1;
-                // }
                 xmlhttp.open("GET", "./libraries/" + deviceNo_1.realname + ".JSON", true);
                 xmlhttp.send();
-                //                     .then(o => { return 1; })
-                //                     .catch(error => {
-                //                         alert('ERROR: ' + error);
-                //                         console.log('ERROR: ' + error);
-                //                         reinit();
-                //                         return -1;
-                //                     });
+
             }
             catch (error) {
                 alert('ERROR: ' + error);
@@ -241,8 +230,6 @@
                 reinit();
                 return -1;
             }
-            // document.getElementById("showJson").innerHTML(obj.name);
-            //                 refreshLayers(deviceNo_1.paresedJsonObj);
         }
 
 
@@ -250,25 +237,19 @@
 
     <script src="./libraries/saveit.js"></script>
 
-    <!-- <script>
-        myWindow.checkInputboxHandler(deviceNo_1);
-    </script> -->
+    <script>
+        checkBoxRWNAsst = function () {
+            myWindow.refreshSelf(deviceNo_1);
+        }
 
-    <!-- <label class="container" name="hah">One
-        <input type="radio" checked="checked" name="radio">
-        <span class="checkmark"></span>
-    </label>
-    <label class="container" name="ww">Two
-        <input type="radio" name="radio">
-        <span class="checkmark"></span>
-    </label>
-    <label class="container">Three<input type="radio" name="radio">
-        <span class="checkmark"></span>
-    </label>
+        checkBoxImmyActAsst = function (tag) {
+            var uuid = tag.slice(2);
+            console.log(uuid);
+            if (deviceNo_1 == null) return;
+            deviceNo_1.commitCharActionsImmy(uuid);
+        }
 
-    <label class="container">Four<input type="radio" name="radio">
-        <span class="checkmark"></span>
-    </label> -->
+    </script>
 </body>
 
 </html>

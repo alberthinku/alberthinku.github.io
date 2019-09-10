@@ -58,7 +58,7 @@
             "offset": 0,
             "length": 20,
             "wtimestamp": false,
-            "datatype": "Uint8",
+            "datatype": "Uint16",
             "littleEndian": true
         }
     ]
