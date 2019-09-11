@@ -17,7 +17,11 @@
         }
 
         p {
-            color: blue;
+            color: black;
+            background-color: azure;
+            background-clip: content-box;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
             /* This is a single-line comment */
             text-align: left;
         }
@@ -159,7 +163,7 @@
             </select>
             <input class="small red button" type="reset" value="reset" onclick="reinit()" />
         </form>
-        Take a look at <a href=deviceNo_1.realname target="_blank">profile details</a>
+        <!-- Take a look at <a href=deviceNo_1.realname target="_blank">profile details</a> -->
 
     </h2>
 
@@ -280,6 +284,17 @@
         }
 
     </script>
+    <p>
+        SiCom web bluetooth connection tool user environment:<br>
+        HARDWARE: PC/Mac/Laptop/Chromebook, <br>
+        SOFTWARE: Chrome ver70 or later on Windows10 or Chrome ver56 or later on
+        Mac/Linux/Window7</p>
+    <p>
+        Bluetooth devices :<br>
+        HARDWARE : BBC microbit, STM32 Nucelo kit, SensorTile, or any device equipted with BLE 4.x or later<br>
+        FIRMWARE/PROFILE : BBC microbit V1_11, ST BlueST V4.3 or later/FunctionPack ALLMEMS/FLV/MOTENV<br>
+    </p>
+
 </body>
 
 </html>
