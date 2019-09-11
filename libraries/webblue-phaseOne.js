@@ -45,8 +45,24 @@ class webblue_phaseOne {
 
         this.has_selected_service = false;
         this.has_selected_Char = false;
+        this.statusInit();
 
     }//webblue_phaseOne constructor
+
+    statusInit = function () {
+        if (this.connected) {
+            //note there will be a slim chance (as a matter of fact) that during the servicechar discovery process statusInit() been called by step.1 choice change
+            //which might create ui and read connection not in pair.... this is a known bug, but can be fixed if user push reset button once he found something wrong
+            this.selected_device.gatt.disconnect();
+            this.unlockMySelectedProfile();
+        }//if device is connected, then disconnect it
+
+        this.resetUI();
+        // document.getElementById(this.status_connected).innerHTML = "false";
+        // document.getElementById(this.status_device_name).innerHTML = "NA";
+        // document.getElementById(this.status_discovered).innerHTML = "false";
+        document.getElementById(this.status_notifications).innerHTML = "false";
+    }
 
     disassembleEventDataOffset(uuid) {
         // var offset = this.parsedJsonObj.L2_Char_offset[this.parsedJsonObj.L2_Char.indexOf(uuid)];
@@ -84,7 +100,7 @@ class webblue_phaseOne {
         this.setConnectedStatus(false);
         this.setDiscoveryStatus(false);
 
-        document.getElementById(this.chardatanotification).innerHTML = "DONE!";
+        document.getElementById(this.chardatanotification).innerHTML = "";
 
         this.collectedData = [];
         console.log('ended resetUI');
@@ -120,32 +136,21 @@ class webblue_phaseOne {
         document.getElementById(this.status_discovered).innerHTML = status;
     }//setDiscoveryStatus
 
+
+
     discoverDevicesOrDisconnect() {
         console.log("discoverDevicesOrDisconnect");
         if (!this.connected) {
             this.discoverDevices();
         } else {
-            this.selected_device.gatt.disconnect();
-            // this.resetUI();
+            this.statusInit();
+            // this.selected_device.gatt.disconnect();
+
         }
     }//discoverDevicesOrDisconnect
 
     discoverDevices() {
         console.log("discoverDevices");
-        // var tmpFilter = [];
-        // this.scanObj.namePrefix
-        //     .forEach(element => {
-        //         tmpFilter.push({ namePrefix: element });
-        //     });
-        // this.scanObj.Service
-        //     .forEach(element => {
-        //         tmpFilter.push({ services: [element.UUID] })
-        //     });
-        // var options = {
-        //     filters:
-        //         tmpFilter,
-        //     optionalServices: [BLUEST_CONTROL_SERVICE, BLUEST_DEBUG_SERVICE]
-        // }
 
         var tmpFilter = [];
         this.parsedJsonObj.L0_namePrefix
@@ -437,8 +442,17 @@ class webblue_phaseOne {
         this.commitCharActions(false, choice_N, choice_R, choice_W);
     }
 
+    lockMySelectedProfile() {
+        document.getElementById("mySelectedProfile").disabled = true;
+    }//lock step.1 selection
+
+    unlockMySelectedProfile() {
+        document.getElementById("mySelectedProfile").disabled = false;
+    }//lock step.1 selection
+
     connect() {
         if (this.connected == false) {
+            this.lockMySelectedProfile();//once entering into connect process, lock the selectedprofile ui
             console.log('connecting');
             this.selected_device.gatt.connect()
                 .then(server => {
@@ -529,19 +543,20 @@ class webblue_phaseOne {
         console.log("onDisconnected");
         var userPreference = "";
 
-        if (confirm("Do you want to save datalogs?") == true) {
-            userPreference = "Data saved successfully!";
-            if (tmp.collectedData.length > 0) {
-                saveData(tmp.collectedData, tmp.realname + "my-dn-MotionSensor.json");
+        if (tmp.collectedData.length > 0) {
+            if (confirm("Do you want to save datalogs?") == true) {
+                userPreference = "Data saved successfully!";
+                if (tmp.collectedData.length > 0) {
+                    saveData(tmp.collectedData, tmp.realname + "-my-webblue-data.json");
+                } else {
+                    alert("no available data!");
+                } //if length
             } else {
-                alert("no available data!");
-            } //if length
-        } else {
-            userPreference = "Save Canceled!";
-        }// if confirmation
+                userPreference = "Save Canceled!";
+            }// if confirmation
 
-        console.log(userPreference);
-
+            console.log(userPreference);
+        }
 
         // if (tmp.discoveredSvcsAndChars.length > 0)
         //     saveData(tmp.discoveredSvcsAndChars, tmp.realname + "discoveredSvsAndChars.json");
