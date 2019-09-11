@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Web Bluetooth tool</title>
+    <title>Web Bluetooth SiCom</title>
     <link rel="stylesheet" type="text/css" href="libraries/css/tableCss.css">
     <link rel="stylesheet" type="text/css" href="libraries/css/smallbuttonsCss.css">
 
@@ -113,8 +113,9 @@
 </head>
 
 <body>
-    <h1>Web Bluetooth try</h1>
-    <h2>Status</h2>
+    <h1>Web Bluetooth SiCom ver 1.0.0</h1>
+
+    <h2>Connection Status</h2>
 
     <table border="1">
         <tr>
@@ -151,7 +152,7 @@
     <h2>Step.1 choose a profile
         <form>
             <select id="mySelectedProfile" onchange="selectProfile(this.value)">
-                <option value="" selected="selected">Choose a profile</option>
+                <option value="" selected="selected" disabled="true">Choose a profile</option>
                 <option value="BBC_Microbit">Microbit</option>
                 <option value="ST_BLUEST">BLUEST</option>
                 <option value="ST_BLUEST_full">BLUEST_f</option>
@@ -165,8 +166,7 @@
     <div class="xJSON" id="showJson" hidden="true"></div>
 
     <h2>Step.2 Device Discovery and Connection</h2>
-    <button class="small button" id="btn_scan1"
-        onclick="deviceNo_1.discoverDevicesOrDisconnect()">discoverDevices</button>
+    <button class="small button" id="btn_scan1" onclick="deviceDiscoverOrDisconnectCall()">discoverDevices</button>
     <hr>
 
     <h2>Step.3 Customize your choices and run!</h2>
@@ -182,13 +182,23 @@
     <span id="GATTShow"></span>
     <!-- <button class="container" id="btn_refresh" onclick="confirmAct()">Confirm!</button> -->
     <script>
+        function deviceDiscoverOrDisconnectCall() {
+            if (!(deviceNo_1 == undefined)) { deviceNo_1.discoverDevicesOrDisconnect(); }
+            else {
+                alert("please go step.1 chose a profile first!")
+            }
+        }
         function processAllCharSelections() {
             myWindow.refreshSelf(deviceNo_1);
             deviceNo_1.commitCharActions(true, [], [], []);
         }
         function selectProfile(profilename) {
-            if (!(profilename == "")) { deviceNo_1 = new webblue_phaseOne(1, profilename); };
-            // else reinit();
+            if (!(profilename == "")) {
+                deviceNo_1 = new webblue_phaseOne(1, profilename);
+            }
+            else {
+                // document.getElementById("mySelectedProfileDefault").disabled = true;
+            }
             mySelectedProfile();
         }
 
@@ -197,12 +207,14 @@
         }
 
         function reinit() {
+            deviceNo_1.statusInit();
+
             var options = document.querySelectorAll('#mySelectedProfile option');
             for (var i = 0, l = options.length; i < l; i++) {
                 options[i].selected = options[i].defaultSelected;
             }
 
-            // deviceNo_1 = undefined;
+            deviceNo_1 = undefined;
             myWindow = null;
             showJson.innerHTML = "";
             GATTShow.innerHTML = "";
