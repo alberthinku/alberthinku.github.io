@@ -3,8 +3,8 @@
 
 <head>
     <title>Web Bluetooth tool</title>
-    <link rel="stylesheet" type="text/css" href="./libraries/css/tableCss.css">
-    <link rel="stylesheet" type="text/css" href="./libraries/css/smallbuttonsCss.css">
+    <link rel="stylesheet" type="text/css" href="libraries/css/tableCss.css">
+    <link rel="stylesheet" type="text/css" href="libraries/css/smallbuttonsCss.css">
 
     <!-- <link rel="stylesheet" type="text/css" href="./libraries/css/RadiobuttonCss.css"> -->
     <!-- <link rel="stylesheet" type="text/css" href="./libraries/css/CheckboxCss.css"> -->
@@ -102,9 +102,9 @@
     </style>
 
 
-    <script src="./libraries/webblue-phaseOne.js"></script>
-    <script src="./libraries/parseJson.js"></script>
-    <script src="./libraries/refreshLayer.js"></script>
+    <script src="libraries/webblue-phaseOne.js"></script>
+    <script src="libraries/parseJson.js"></script>
+    <script src="libraries/refreshLayer.js"></script>
     <script>myWindow = null;</script>
 
 </head>
@@ -208,7 +208,7 @@
 
         function mySelectedProfile() {
             try {
-                document.getElementsByTagName("a")[0].setAttribute("href", "./libraries/" + deviceNo_1.realname + ".JSON");
+                document.getElementsByTagName("a")[0].setAttribute("href", "libraries/" + deviceNo_1.realname + ".JSON");
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
@@ -220,7 +220,7 @@
                     }
                 };
 
-                xmlhttp.open("GET", "./libraries/" + deviceNo_1.realname + ".JSON", true);
+                xmlhttp.open("GET", "libraries/" + deviceNo_1.realname + ".JSON", true);
                 xmlhttp.send();
 
             }
@@ -235,7 +235,7 @@
 
     </script>
 
-    <script src="./libraries/saveit.js"></script>
+    <script src="libraries/saveit.js"></script>
 
     <script>
         checkBoxRWNAsst = function () {
