@@ -202,6 +202,11 @@ class webblue_phaseOne {
             bufferArray = new Int16Array(dataview.buffer, byteOffset, byteLength / 2);
         }
 
+        if (dataType == "Int32") {
+            // textencodeKey = "Int16";
+            bufferArray = new Int32Array(dataview.buffer, byteOffset, byteLength / 4);
+        }
+
         if (dataType == "Uint8") {
             // textencodeKey = "Uint8";
             bufferArray = new Uint8Array(dataview.buffer, byteOffset, byteLength);
@@ -305,6 +310,12 @@ class webblue_phaseOne {
                 textencodeKey = "Int16";
                 // buffer = new Int16Array([parseInt(strInput)]);
                 buffer = new Int16Array(numberArray.map(x => parseInt(x)));
+            }
+
+            if (dataType == "Int32") {
+                textencodeKey = "Int32";
+                // buffer = new Int16Array([parseInt(strInput)]);
+                buffer = new Int32Array(numberArray.map(x => parseInt(x)));
             }
 
             if (dataType == "Uint8") {
