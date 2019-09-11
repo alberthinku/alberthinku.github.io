@@ -213,17 +213,30 @@
             try {
                 document.getElementsByTagName("a")[0].setAttribute("href", "libraries/" + deviceNo_1.realname + ".JSON");
                 var xmlhttp = new XMLHttpRequest();
-                xmlhttp.onreadystatechange = function () {
-                    if (this.readyState == 4 && this.status == 200) {
-                        var myObj = JSON.parse(this.responseText);
+                // xmlhttp.onreadystatechange = function () {
+                //     if (this.readyState == 4 && this.status == 200) {
+                //         var myObj = JSON.parse(this.responseText);
+                //         document.getElementById("showJson").innerHTML = JSON.stringify(myObj);
+                //         myWindow = new refreshLayer(deviceNo_1.makeObjJson(myObj));
+                //         myWindow.refreshSelf(deviceNo_1);
+
+                //     }
+                // };
+
+                xmlhttp.open("GET", "libraries/" + deviceNo_1.realname + ".json", true);
+                xmlhttp.responseType = 'json';
+                var myObj;
+
+                xmlhttp.onload = function () {
+                    if (xmlhttp.status === 200) {
+                        myObj = xmlhttp.response;
                         document.getElementById("showJson").innerHTML = JSON.stringify(myObj);
                         myWindow = new refreshLayer(deviceNo_1.makeObjJson(myObj));
                         myWindow.refreshSelf(deviceNo_1);
-
+                    } else {
+                        console.log("new work request for .json failed with respone " + xmlhttp.status + ": " + xmlhttp.statusText);
                     }
-                };
-
-                xmlhttp.open("GET", "libraries/" + deviceNo_1.realname + ".JSON", true);
+                }
                 xmlhttp.send();
 
             }
